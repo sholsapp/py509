@@ -17,9 +17,11 @@ setup(
   url='http://www.google.com',
   packages=['bishop'],
   install_requires=[
-    'pyOpenSSL',
     'cryptography',
     'certifi',
     'pytest',
+    'python-dateutil',
+    'pyOpenSSL',
+    'tabulate',
   ],
 )
