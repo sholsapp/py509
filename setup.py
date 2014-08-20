@@ -19,6 +19,7 @@ setup(
   install_requires=[
     'pyOpenSSL',
     'cryptography',
+    'certifi',
     'pytest',
   ],
 )
