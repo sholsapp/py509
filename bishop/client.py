@@ -1,7 +1,7 @@
 import socket
 import logging
 
-from OpenSSL import SSL, crypto
+from OpenSSL import SSL
 import certifi
 
 
@@ -17,4 +17,4 @@ def get_host_certificate(host, port=443):
   ssl_sock = SSL.Connection(context, sock)
   ssl_sock.connect((ip_addr, port))
   ssl_sock.do_handshake()
-  return crypto.dump_certificate(crypto.FILETYPE_PEM, ssl_sock.get_peer_certificate())
+  return ssl_sock.get_peer_certificate()
