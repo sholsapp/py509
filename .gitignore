@@ -8,7 +8,6 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
-bin/
 build/
 develop-eggs/
 dist/
@@ -51,6 +50,9 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# SQLAlchemy
+*.db
 
 # VIM
 *.swp
