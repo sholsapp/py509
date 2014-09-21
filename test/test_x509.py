@@ -21,7 +21,7 @@ def test_make_certificate_signing_request():
 def test_make_certificate_authority():
   key, crt = make_certificate_authority(CN='Test CA')
   assert crt.get_subject().CN == 'Test CA'
-  assert crt.get_extension(0).get_short_name() == 'basicConstraints'
+  assert crt.get_extension(0).get_short_name() == b'basicConstraints'
   # TODO: Add an ASN.1 parser so that we can decode the data that is tucked
   # away in this extension.
   #assert crt.get_extension(0).get_data() == 'CA:TRUE'
