@@ -38,7 +38,7 @@ def make_certificate(csr, ca_key, ca_cert, serial, not_before, not_after, digest
   crt.set_serial_number(serial)
   crt.gmtime_adj_notBefore(not_before)
   crt.gmtime_adj_notAfter(not_after)
-  crt.set_issuer(csr.get_subject())
+  crt.set_issuer(ca_cert.get_subject())
   crt.set_subject(csr.get_subject())
   crt.set_pubkey(csr.get_pubkey())
   crt.set_version(version)
