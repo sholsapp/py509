@@ -57,5 +57,5 @@ def make_certificate_authority(**name):
   """
   key = make_pkey()
   csr = make_certificate_signing_request(key, **name)
-  crt = make_certificate(csr, key, csr, make_serial(), 0, 10 * 365 * 24 * 60 * 60, exts=[crypto.X509Extension('basicConstraints', True, 'CA:TRUE')])
+  crt = make_certificate(csr, key, csr, make_serial(), 0, 10 * 365 * 24 * 60 * 60, exts=[crypto.X509Extension(b'basicConstraints', True, b'CA:TRUE')])
   return key, crt
