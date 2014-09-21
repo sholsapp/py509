@@ -31,7 +31,7 @@ def stringify_version(v):
 
 
 def stringify_subject(s):
-  return 'CN=%(CN)s; O=%(O)s' % dict(s)
+  return 'CN=%(CN)s' % dict(s)
 
 
 def main():

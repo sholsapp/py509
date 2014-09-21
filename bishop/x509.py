@@ -32,13 +32,13 @@ def make_certificate_signing_request(pkey, digest='sha512', **name):
   return csr
 
 
-def make_certificate(csr, (ca_crt, ca_key), serial, (not_before, not_after), digest='sha512', version=2, exts=None):
+def make_certificate(csr, ca_key, ca_cert, serial, not_before, not_after, digest='sha512', version=2, exts=()):
   """Make a certificate."""
   crt = crypto.X509()
   crt.set_serial_number(serial)
   crt.gmtime_adj_notBefore(not_before)
   crt.gmtime_adj_notAfter(not_after)
-  crt.set_issuer(ca_crt.get_subject())
+  crt.set_issuer(csr.get_subject())
   crt.set_subject(csr.get_subject())
   crt.set_pubkey(csr.get_pubkey())
   crt.set_version(version)
@@ -57,5 +57,5 @@ def make_certificate_authority(**name):
   """
   key = make_pkey()
   csr = make_certificate_signing_request(key, **name)
-  crt = make_certificate(csr, (csr, key), make_serial(), (0, 10 * 365 * 24 * 60 * 60), exts=[crypto.X509Extension('basicConstraints', True, 'CA:TRUE')])
+  crt = make_certificate(csr, key, csr, make_serial(), 0, 10 * 365 * 24 * 60 * 60, exts=[crypto.X509Extension('basicConstraints', True, 'CA:TRUE')])
   return key, crt
