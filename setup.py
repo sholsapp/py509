@@ -10,7 +10,7 @@ with open(os.path.abspath('README.md')) as fh:
 
 setup(
   name='py509',
-  version='1.0',
+  version='0.0.1',
   description=README,
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
