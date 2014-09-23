@@ -9,13 +9,13 @@ with open(os.path.abspath('README.md')) as fh:
   README = fh.read()
 
 setup(
-  name='bishop',
+  name='py509',
   version='1.0',
   description=README,
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
   url='http://www.google.com',
-  packages=['bishop'],
+  packages=['py509'],
   install_requires=[
     'cryptography',
     'certifi',

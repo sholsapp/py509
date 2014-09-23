@@ -1,6 +1,6 @@
 from OpenSSL import crypto
 
-from bishop.x509 import make_pkey, make_certificate_signing_request, make_certificate_authority, make_certificate
+from py509.x509 import make_pkey, make_certificate_signing_request, make_certificate_authority, make_certificate
 
 
 def test_make_pkey():
