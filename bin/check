@@ -11,7 +11,7 @@ from OpenSSL import crypto
 import dateutil.parser
 import tabulate
 
-from bishop import client
+from py509 import client
 
 
 logging.basicConfig(level=logging.INFO)
