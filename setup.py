@@ -4,14 +4,10 @@ import os
 
 from setuptools import setup
 
-README = None
-with open(os.path.abspath('README.md')) as fh:
-  README = fh.read()
-
 setup(
   name='py509',
-  version='0.0.1',
-  description=README,
+  version='0.0.2',
+  description="Framework and utility code for running public key infrastructure at home.",
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
   url='http://www.google.com',
