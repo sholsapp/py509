@@ -33,7 +33,15 @@ def make_certificate_signing_request(pkey, digest='sha512', **name):
 
 
 def make_certificate(csr, ca_key, ca_cert, serial, not_before, not_after, digest='sha512', version=2, exts=()):
-  """Make a certificate."""
+  """Make a certificate.
+
+  The following extensions are added to all certificates in the following order
+  *before* additional extensions specified by `exts` kwarg:
+
+    - subjectKeyIdentifier
+    - authorityKeyIdentifier
+
+  """
   crt = crypto.X509()
   crt.set_serial_number(serial)
   crt.gmtime_adj_notBefore(not_before)
@@ -42,7 +50,18 @@ def make_certificate(csr, ca_key, ca_cert, serial, not_before, not_after, digest
   crt.set_subject(csr.get_subject())
   crt.set_pubkey(csr.get_pubkey())
   crt.set_version(version)
+
+  crt.add_extensions([
+    crypto.X509Extension(b'subjectKeyIdentifier', False, b'hash', subject=crt)])
+  if ca_cert.get_subject() == crt.get_subject():
+    crt.add_extensions([
+      crypto.X509Extension(b'authorityKeyIdentifier', False, b'keyid:always', issuer=crt)])
+  else:
+    crt.add_extensions([
+      crypto.X509Extension(b'authorityKeyIdentifier', False, b'keyid:always', issuer=ca_cert)])
+
   crt.add_extensions(exts)
+
   crt.sign(ca_key, digest)
   return crt
 
