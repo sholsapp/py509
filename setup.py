@@ -13,11 +13,12 @@ setup(
   url='http://www.google.com',
   packages=['py509'],
   install_requires=[
-    'cryptography',
     'certifi',
+    'cryptography',
+    'pyOpenSSL',
+    'pyasn1',
     'pytest',
     'python-dateutil',
-    'pyOpenSSL',
     'tabulate',
   ],
 )
