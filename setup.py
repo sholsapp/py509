@@ -11,6 +11,7 @@ setup(
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
   url='http://www.google.com',
+  package_dir={'py509': ''},
   packages=['py509'],
   install_requires=[
     'certifi',
