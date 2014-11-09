@@ -38,7 +38,7 @@ def test_make_certificate():
   crt = make_certificate(
     csr, ca_key, ca_crt,
     make_serial(), 0, 10 * 365 * 24 * 60 * 60,
-    exts=[crypto.X509Extension('subjectAltName', True, b'IP:0.0.0.0')])
+    exts=[crypto.X509Extension(b'subjectAltName', True, b'IP:0.0.0.0')])
   assert crt.get_subject().CN == 'Test Cert'
 
 
