@@ -78,3 +78,17 @@ def make_certificate_authority(**name):
   csr = make_certificate_signing_request(key, **name)
   crt = make_certificate(csr, key, csr, make_serial(), 0, 10 * 365 * 24 * 60 * 60, exts=[crypto.X509Extension(b'basicConstraints', True, b'CA:TRUE')])
   return key, crt
+
+
+def load_x509_certificates(buf):
+  """Load one or multiple X.509 certificates from a buffer.
+
+  :param buf: A buffer is an instance of `basestring` and can contain multiple
+    certificates.
+
+  """
+  if not isinstance(buf, basestring):
+    raise ValueError('`buf` should be an instance of `basestring` not `%s`' % type(buf))
+
+  for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
+    yield crypto.load_certificate(crypto.FILETYPE_PEM, pem[0])
