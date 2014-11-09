@@ -115,11 +115,11 @@ def decode_subject_alt_name(asn1_data):
         component_name = component.getName()
         component_data = component.getComponent().asOctets()
         if component_name == 'dNSName':
-          yield str(component_data)
+          yield bytes.decode(component_data)
         elif component_name == 'iPAddress':
-          yield str(socket.inet_ntoa(component_data))
+          yield bytes.decode(socket.inet_ntoa(component_data))
         elif component_name == 'uniformResourceIdentifier':
-          yield str(component_data)
+          yield bytes.decode(component_data)
         else:
           # FIXME: other types are currently not handled.
           pass
