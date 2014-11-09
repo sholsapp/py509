@@ -4,6 +4,8 @@ import uuid
 from pyasn1.codec.der.decoder import decode
 from OpenSSL import crypto
 
+from py509.asn1.san import SubjectAltName
+
 
 def make_serial():
   """Make a random serial number."""
