@@ -1,6 +1,7 @@
 import socket
 import uuid
 
+from pyasn1.codec.der.decoder import decode
 from OpenSSL import crypto
 
 
@@ -92,3 +93,28 @@ def load_x509_certificates(buf):
 
   for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
     yield crypto.load_certificate(crypto.FILETYPE_PEM, pem[0])
+
+
+def decode_subject_alt_name(asn1_data):
+  """Decode a subject alternative name's data.
+
+  Note, not all of the possible types are handled by this method. For a
+  complete listing, see https://tools.ietf.org/html/rfc3280#section-4.2.1.7.
+  Currently, only DNS names, IP addresses, and URI are supported.
+
+  """
+  for name in decode(asn1_data, asn1Spec=SubjectAltName()):
+    if isinstance(name, SubjectAltName):
+      for entry in range(len(name)):
+        component = name.getComponentByPosition(entry)
+        component_name = component.getName()
+        component_data = component.getComponent().asOctets()
+        if component_name == 'dNSName':
+          yield str(component_data)
+        elif component_name == 'iPAddress':
+          yield str(socket.inet_ntoa(component_data))
+        elif component_name == 'uniformResourceIdentifier':
+          yield str(component_data)
+        else:
+          # FIXME: other types are currently not handled.
+          pass
