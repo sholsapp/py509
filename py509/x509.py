@@ -31,7 +31,7 @@ def make_certificate_signing_request(pkey, digest='sha512', **name):
   #subj.OU = name.get('OU', socket.gethostbyname(socket.getfqdn()))
   #subj.CN = name.get('CN', socket.getfqdn())
   subj.OU = name.get('OU', 'Unit')
-  Subj.CN = name.get('CN', 'Common')
+  subj.CN = name.get('CN', 'Common')
   csr.set_pubkey(pkey)
   csr.set_version(3)
   csr.sign(pkey, digest)
