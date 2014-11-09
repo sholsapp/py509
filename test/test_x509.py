@@ -48,7 +48,7 @@ def test_make_san_extensions():
   assert list(decode_subject_alt_name(e1.get_data())) == ['0.0.0.0']
   e2 = crypto.X509Extension(b'subjectAltName', True, b'DNS:foo.com')
   assert e2
-  assert list(decode_subject_alt_name(e2.get_data())) == ['bfoo.com']
+  assert list(decode_subject_alt_name(e2.get_data())) == [b'foo.com']
   e3 = crypto.X509Extension(b'subjectAltName', True, b'URI:this:is:a:uri(hello-world)')
   assert e3
   assert list(decode_subject_alt_name(e3.get_data())) == [b'this:is:a:uri(hello-world)']
