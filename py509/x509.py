@@ -117,7 +117,7 @@ def decode_subject_alt_name(asn1_data):
         if component_name == 'dNSName':
           yield bytes.decode(component_data)
         elif component_name == 'iPAddress':
-          yield bytes.decode(socket.inet_ntoa(component_data))
+          yield socket.inet_ntoa(component_data)
         elif component_name == 'uniformResourceIdentifier':
           yield bytes.decode(component_data)
         else:
