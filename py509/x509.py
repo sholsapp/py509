@@ -1,7 +1,11 @@
+import re
 import socket
 import uuid
 
+from pyasn1.codec.der.decoder import decode
 from OpenSSL import crypto
+
+from py509.asn1.san import SubjectAltName
 
 
 def make_serial():
@@ -24,8 +28,10 @@ def make_certificate_signing_request(pkey, digest='sha512', **name):
   subj.ST = name.get('ST', 'CA')
   subj.L = name.get('L', 'Home')
   subj.O = name.get('O', 'Home')
-  subj.OU = name.get('OU', socket.gethostbyname(socket.getfqdn()))
-  subj.CN = name.get('CN', socket.getfqdn())
+  #subj.OU = name.get('OU', socket.gethostbyname(socket.getfqdn()))
+  #subj.CN = name.get('CN', socket.getfqdn())
+  subj.OU = name.get('OU', 'Unit')
+  subj.CN = name.get('CN', 'Common')
   csr.set_pubkey(pkey)
   csr.set_version(3)
   csr.sign(pkey, digest)
@@ -78,3 +84,42 @@ def make_certificate_authority(**name):
   csr = make_certificate_signing_request(key, **name)
   crt = make_certificate(csr, key, csr, make_serial(), 0, 10 * 365 * 24 * 60 * 60, exts=[crypto.X509Extension(b'basicConstraints', True, b'CA:TRUE')])
   return key, crt
+
+
+def load_x509_certificates(buf):
+  """Load one or multiple X.509 certificates from a buffer.
+
+  :param buf: A buffer is an instance of `basestring` and can contain multiple
+    certificates.
+
+  """
+  if not isinstance(buf, basestring):
+    raise ValueError('`buf` should be an instance of `basestring` not `%s`' % type(buf))
+
+  for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
+    yield crypto.load_certificate(crypto.FILETYPE_PEM, pem[0])
+
+
+def decode_subject_alt_name(asn1_data):
+  """Decode a subject alternative name's data.
+
+  Note, not all of the possible types are handled by this method. For a
+  complete listing, see https://tools.ietf.org/html/rfc3280#section-4.2.1.7.
+  Currently, only DNS names, IP addresses, and URI are supported.
+
+  """
+  for name in decode(asn1_data, asn1Spec=SubjectAltName()):
+    if isinstance(name, SubjectAltName):
+      for entry in range(len(name)):
+        component = name.getComponentByPosition(entry)
+        component_name = component.getName()
+        component_data = component.getComponent().asOctets()
+        if component_name == 'dNSName':
+          yield bytes.decode(component_data)
+        elif component_name == 'iPAddress':
+          yield socket.inet_ntoa(component_data)
+        elif component_name == 'uniformResourceIdentifier':
+          yield bytes.decode(component_data)
+        else:
+          # FIXME: other types are currently not handled.
+          pass
