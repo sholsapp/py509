@@ -28,13 +28,13 @@ class Pex(Command):
 
   def run(self):
     if not os.path.exists('dist/wheel-cache'):
-      print 'You need to create dist/wheel-cache first! You\'ll need to run the following.'
-      print '  mkdir dist/wheel-cache'
-      print '  pip wheel -w dist/wheel-cache'
+      print('You need to create dist/wheel-cache first! You\'ll need to run the following.')
+      print('  mkdir dist/wheel-cache')
+      print('  pip wheel -w dist/wheel-cache')
       return
     for entry in entry_points['console_scripts']:
       name, call = tuple([_.strip() for _ in entry.split('=')])
-      print 'Creating {0} as {1}'.format(name, call)
+      print('Creating {0} as {1}'.format(name, call))
       subprocess.check_call([
         'pex',
         '-r', 'py509',
