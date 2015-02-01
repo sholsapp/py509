@@ -46,7 +46,7 @@ class Pex(Command):
 
 setup(
   name='py509',
-  version='0.0.3',
+  version='0.0.4',
   description="Framework and utility code for running public key infrastructure.",
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
