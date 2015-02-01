@@ -17,3 +17,11 @@ mkdir ~/wheel-cache
 pip wheel -w ~/wheel-cache .
 pex -r py509 --no-pypi --repo=~/wheel-cache -o pyssl-get -e py509.bin.get:main
 ```
+
+This process is automated using a custom `setuptools.Command` in this project
+called `pexify`. To run the above code for each entry point specified in
+`setup.py` just run the following.
+
+```bash
+python setup.py pexify
+```
