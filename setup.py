@@ -8,10 +8,10 @@ from setuptools import setup, find_packages, Command
 
 entry_points = {
   'console_scripts': [
-    'pyssl-diff = py509.bin.diff:main',
-    'pyssl-get = py509.bin.get:main',
-    'pyssl-ls = py509.bin.ls:main',
-    'pyssl-verify = py509.bin.verify:main',
+    'ssl-diff = py509.bin.diff:main',
+    'ssl-get = py509.bin.get:main',
+    'ssl-ls = py509.bin.ls:main',
+    'ssl-verify = py509.bin.verify:main',
   ],
 }
 
