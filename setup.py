@@ -53,6 +53,7 @@ setup(
   url='https://github.com/sholsapp/py509',
   packages=find_packages(),
   install_requires=[
+    'argparse',
     'certifi',
     'cryptography',
     'pyOpenSSL',
