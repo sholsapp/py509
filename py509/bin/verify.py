@@ -17,9 +17,12 @@ log = logging.getLogger(__name__)
 
 def main():
 
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--ca', required=False, default=certifi.where())
+  args = parser.parse_args()
+
   trust_store = []
-  with open(certifi.where()) as fh:
-  #with open('/Users/sholsapp/workspace/py509/test.pem') as fh:
+  with open(args.ca) as fh:
     trust_store = list(load_x509_certificates(fh.read()))
 
   x509store = crypto.X509Store()
