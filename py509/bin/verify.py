@@ -55,7 +55,9 @@ def main():
       ext = x509cert.get_extension(idx)
       if ext.get_short_name() in ['authorityInfoAccess']:
         access = decode_authority_information_access(ext.get_data())
-        x509store.add_cert(get_certificate(access, strict_compliance=args.strict_compliance))
+        intermediate = get_certificate(access, strict_compliance=args.strict_compliance)
+        if intermediate:
+          x509store.add_cert(intermediate)
 
   try:
     crypto.X509StoreContext(x509store, x509cert).verify_certificate()
