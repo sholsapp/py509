@@ -5,21 +5,29 @@
 import argparse
 import logging
 import sys
+import struct
 
-import certifi
 from OpenSSL import crypto
+import certifi
+import requests
 
-from pyasn1.codec.der.decoder import decode
-from py509.x509 import load_x509_certificates
 from py509.asn1.authority_info_access import AuthorityInfoAccess
-
+from py509.x509 import load_x509_certificates
+from pyasn1.codec.der.decoder import decode
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-# https://tools.ietf.org/html/rfc5280
+
 def decode_authority_information_access(asn1_data):
+  """Decode an authority information access extension's data.
+
+  See https://tools.ietf.org/html/rfc5280.
+
+  :param asn1_data: The ASN.1 data to decode.
+
+  """
   OCSP = '1.3.6.1.5.5.7.48.1'
   CA_ISSUER = '1.3.6.1.5.5.7.48.2'
   for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccess()):
@@ -29,10 +37,12 @@ def decode_authority_information_access(asn1_data):
         if component.getComponentByName('accessMethod').prettyPrint() == CA_ISSUER:
           return component.getComponentByName('accessLocation').getComponent().asOctets()
 
+
 def main():
 
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('--ca', required=False, default=certifi.where())
+  parser.add_argument('--no-resolve-intermediate', action='store_false')
   args = parser.parse_args()
 
   trust_store = []
@@ -41,7 +51,6 @@ def main():
 
   x509store = crypto.X509Store()
   for ca in trust_store:
-    print ca.get_subject()
     x509store.add_cert(ca)
 
   x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
@@ -49,9 +58,16 @@ def main():
   for idx in range(0, x509cert.get_extension_count()):
     ext = x509cert.get_extension(idx)
     if ext.get_short_name() in ['authorityInfoAccess']:
-      print ext.get_short_name()
-      print str(ext)
-      print decode_authority_information_access(ext.get_data())
+      access = decode_authority_information_access(ext.get_data())
+
+      rsp = requests.get(access, headers={'Content-Type': 'application/pkix-cert'})
+      if rsp.ok:
+        der = rsp.text
+        print rsp.headers
+
+      # iso-8859-1, a.k.a., latin-1
+      x = crypto.load_certificate(crypto.FILETYPE_ASN1, der.encode('iso-8859-1'))
+      print x
 
   try:
     crypto.X509StoreContext(x509store, x509cert).verify_certificate()

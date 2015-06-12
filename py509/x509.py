@@ -101,11 +101,14 @@ def load_x509_certificates(buf):
 
 
 def decode_subject_alt_name(asn1_data):
-  """Decode a subject alternative name's data.
+  """Decode a subject alternative name extensions's data.
 
-  Note, not all of the possible types are handled by this method. For a
-  complete listing, see https://tools.ietf.org/html/rfc3280#section-4.2.1.7.
-  Currently, only DNS names, IP addresses, and URI are supported.
+  Note, not all of the possible types are handled by this method. Currently,
+  only DNS names, IP addresses and URI are handled.
+
+  See https://tools.ietf.org/html/rfc3280 for more information.
+
+  :param asn1_data: The ASN.1 data to decode.
 
   """
   for name in decode(asn1_data, asn1Spec=SubjectAltName()):
