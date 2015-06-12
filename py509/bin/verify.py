@@ -11,8 +11,7 @@ from OpenSSL import crypto
 import certifi
 import urllib3
 
-from py509.asn1.authority_info_access import AuthorityInfoAccess
-from py509.x509 import load_x509_certificates
+from py509.x509 import load_x509_certificates, decode_authority_information_access
 from pyasn1.codec.der.decoder import decode
 
 
@@ -21,24 +20,6 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
-
-
-def decode_authority_information_access(asn1_data):
-  """Decode an authority information access extension's data.
-
-  See https://tools.ietf.org/html/rfc5280.
-
-  :param asn1_data: The ASN.1 data to decode.
-
-  """
-  OCSP_OID = '1.3.6.1.5.5.7.48.1'
-  CA_ISSUER_OID = '1.3.6.1.5.5.7.48.2'
-  for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccess()):
-    if isinstance(authority, AuthorityInfoAccess):
-      for entry in range(len(authority)):
-        component = authority.getComponentByPosition(entry)
-        if component.getComponentByName('accessMethod').prettyPrint() == CA_ISSUER_OID:
-          return component.getComponentByName('accessLocation').getComponent().asOctets()
 
 
 def get_certificate(url, strict_compliance=False):

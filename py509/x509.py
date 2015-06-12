@@ -6,6 +6,7 @@ from pyasn1.codec.der.decoder import decode
 from OpenSSL import crypto
 
 from py509.asn1.san import SubjectAltName
+from py509.asn1.authority_info_access import AuthorityInfoAccess
 
 
 def make_serial():
@@ -126,3 +127,21 @@ def decode_subject_alt_name(asn1_data):
         else:
           # FIXME: other types are currently not handled.
           pass
+
+
+def decode_authority_information_access(asn1_data):
+  """Decode an authority information access extension's data.
+
+  See https://tools.ietf.org/html/rfc5280.
+
+  :param asn1_data: The ASN.1 data to decode.
+
+  """
+  OCSP_OID = '1.3.6.1.5.5.7.48.1'
+  CA_ISSUER_OID = '1.3.6.1.5.5.7.48.2'
+  for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccess()):
+    if isinstance(authority, AuthorityInfoAccess):
+      for entry in range(len(authority)):
+        component = authority.getComponentByPosition(entry)
+        if component.getComponentByName('accessMethod').prettyPrint() == CA_ISSUER_OID:
+          return component.getComponentByName('accessLocation').getComponent().asOctets()
