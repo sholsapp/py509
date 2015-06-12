@@ -26,9 +26,9 @@ def test_make_certificate_authority():
   assert crt.get_extension(2).get_short_name() == b'basicConstraints'
   # TODO: Add an ASN.1 parser so that we can decode the data that is tucked
   # away in this extension.
-  #print crt.get_extension(0).get_data()
-  #print crt.get_extension(1).get_data()
-  #print crt.get_extension(2).get_data()
+  # print crt.get_extension(0).get_data()
+  # print crt.get_extension(1).get_data()
+  # print crt.get_extension(2).get_data()
 
 
 def test_make_certificate():

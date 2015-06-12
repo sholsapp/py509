@@ -4,7 +4,6 @@
 
 import argparse
 import logging
-import ssl
 
 from OpenSSL import crypto
 

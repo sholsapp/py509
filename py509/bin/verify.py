@@ -5,14 +5,12 @@
 import argparse
 import logging
 import sys
-import struct
 
 from OpenSSL import crypto
 import certifi
 import urllib3
 
 from py509.x509 import load_x509_certificates, decode_authority_information_access
-from pyasn1.codec.der.decoder import decode
 
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -30,7 +28,7 @@ def get_certificate(url, strict_compliance=False):
       # This web server isn't following the RFC
       return
   else:
-    raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(access))
+    raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(url))
   return crypto.load_certificate(crypto.FILETYPE_ASN1, rsp.data)
 
 

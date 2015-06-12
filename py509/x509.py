@@ -29,8 +29,6 @@ def make_certificate_signing_request(pkey, digest='sha512', **name):
   subj.ST = name.get('ST', 'CA')
   subj.L = name.get('L', 'Home')
   subj.O = name.get('O', 'Home')
-  #subj.OU = name.get('OU', socket.gethostbyname(socket.getfqdn()))
-  #subj.CN = name.get('CN', socket.getfqdn())
   subj.OU = name.get('OU', 'Unit')
   subj.CN = name.get('CN', 'Common')
   csr.set_pubkey(pkey)
@@ -137,7 +135,7 @@ def decode_authority_information_access(asn1_data):
   :param asn1_data: The ASN.1 data to decode.
 
   """
-  OCSP_OID = '1.3.6.1.5.5.7.48.1'
+  # OCSP_OID = '1.3.6.1.5.5.7.48.1'
   CA_ISSUER_OID = '1.3.6.1.5.5.7.48.2'
   for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccess()):
     if isinstance(authority, AuthorityInfoAccess):

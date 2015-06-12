@@ -2,7 +2,6 @@
 
 """List contents of a certificate."""
 
-import argparse
 import logging
 import ssl
 import sys
@@ -10,8 +9,6 @@ import sys
 from OpenSSL import crypto
 import dateutil.parser
 import tabulate
-
-from py509 import client
 
 
 logging.basicConfig(level=logging.INFO)
@@ -36,10 +33,6 @@ def stringify_subject(s):
 
 def main():
 
-  #parser = argparse.ArgumentParser(description=__doc__)
-  #parser.add_argument('host')
-  #args = parser.parse_args()
-
   x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
   table = [
@@ -49,7 +42,6 @@ def main():
     ['notAfter', dateutil.parser.parse(x509cert.get_notAfter())],
     ['serial', x509cert.get_serial_number()],
     ['version', stringify_version(x509cert.get_version())],
-    #['extensions', x509cert.get_extension_count()],
   ]
 
   for idx in range(0, x509cert.get_extension_count()):
