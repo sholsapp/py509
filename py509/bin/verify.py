@@ -9,7 +9,7 @@ import struct
 
 from OpenSSL import crypto
 import certifi
-import requests
+import urllib3
 
 from py509.asn1.authority_info_access import AuthorityInfoAccess
 from py509.x509 import load_x509_certificates
@@ -42,7 +42,7 @@ def main():
 
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('--ca', required=False, default=certifi.where())
-  parser.add_argument('--no-resolve-intermediate', action='store_false')
+  parser.add_argument('--no-resolve-intermediate', action='store_false', default=False)
   args = parser.parse_args()
 
   trust_store = []
@@ -55,19 +55,20 @@ def main():
 
   x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
-  for idx in range(0, x509cert.get_extension_count()):
-    ext = x509cert.get_extension(idx)
-    if ext.get_short_name() in ['authorityInfoAccess']:
-      access = decode_authority_information_access(ext.get_data())
-
-      rsp = requests.get(access, headers={'Content-Type': 'application/pkix-cert'})
-      if rsp.ok:
-        der = rsp.text
-        print rsp.headers
-
-      # iso-8859-1, a.k.a., latin-1
-      x = crypto.load_certificate(crypto.FILETYPE_ASN1, der.encode('iso-8859-1'))
-      print x
+  if not args.no_resolve_intermediate:
+    for idx in range(0, x509cert.get_extension_count()):
+      ext = x509cert.get_extension(idx)
+      if ext.get_short_name() in ['authorityInfoAccess']:
+        access = decode_authority_information_access(ext.get_data())
+        http = urllib3.PoolManager()
+        rsp = http.request('GET', access)
+        if rsp.status == 200:
+          der = rsp.data
+        else:
+          raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(access))
+        intermediate = crypto.load_certificate(crypto.FILETYPE_ASN1, der)
+        print 'Adding {0}'.format(intermediate)
+        x509store.add_cert(intermediate)
 
   try:
     crypto.X509StoreContext(x509store, x509cert).verify_certificate()
