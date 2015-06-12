@@ -1,19 +1,6 @@
-"""ASN.1 implementation for subjectAltNames support.
-
-Adopted and slightly modified from the NDG HTTPS client at
-https://github.com/cedadev/ndg_httpsclient, which was adopted from some legacy
-pyOpenSSL extensions. Unfortunately, a first-class OpenSSL + ASN.1 library
-doesn't exist, so it seems common practice to include this ASN.1 boilerplate
-in your own projects.
-
-"""
-
 from pyasn1.type import univ, constraint, char, namedtype, tag
 
-
-# The maximum allowed string length allowed.
 MAX = 256
-
 
 class DirectoryString(univ.Choice):
   """ASN.1 Directory string class."""
@@ -121,12 +108,14 @@ class GeneralName(univ.Choice):
     )
 
 
-class GeneralNames(univ.SequenceOf):
-  """Sequence of names for ASN.1 subjectAltNames settings."""
-  componentType = GeneralName()
-  sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
+class AccessDescription(univ.Sequence):
+  componentType = namedtype.NamedTypes(
+    namedtype.NamedType('accessMethod', univ.ObjectIdentifier()),
+    namedtype.NamedType('accessLocation', GeneralName()),
+    )
 
 
-class SubjectAltName(GeneralNames):
+class AuthorityInfoAccess(univ.SequenceOf):
   """ASN.1 implementation for subjectAltNames support."""
-
+  componentType = AccessDescription()
+  sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
