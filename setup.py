@@ -58,12 +58,12 @@ setup(
     'cryptography',
     'pyOpenSSL',
     'pyasn1',
-    'pytest',
     'python-dateutil',
     'tabulate',
   ],
   tests_require=[
     'pytest',
+    'flake8',
   ],
   entry_points=entry_points,
   cmdclass={'pexify': Pex},
