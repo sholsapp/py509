@@ -1,0 +1,7 @@
+.. _py509-x509:
+
+:py:mod:`py509.x509` --- Generic x509 functions
+===============================================
+
+.. automodule:: py509.x509
+                :members:

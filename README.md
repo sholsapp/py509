@@ -25,3 +25,9 @@ called `pexify`. To run the above code for each entry point specified in
 ```bash
 python setup.py pexify
 ```
+
+## docs
+
+```bash
+sphinx-build -W -b html docs docs/_build/html
+```
