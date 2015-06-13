@@ -97,7 +97,19 @@ class AnotherName(univ.Sequence):
 
 
 class GeneralName(univ.Choice):
-  """ASN.1 configuration for X.509 certificate subjectAltNames fields."""
+  """ASN.1 component type for a general name fields.
+
+  A general name is one of:
+
+    - otherName
+    - rfc822Name
+    - dNSName
+    - directoryName
+    - uniformResourceIdentifier
+    - iPAddress
+    - registeredID
+
+  """
   componentType = namedtype.NamedTypes(
     namedtype.NamedType('otherName', AnotherName().subtype(
       implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
@@ -121,6 +133,6 @@ class GeneralName(univ.Choice):
 
 
 class GeneralNames(univ.SequenceOf):
-  """Sequence of names for ASN.1 subjectAltNames settings."""
+  """Sequence of general names."""
   componentType = GeneralName()
   sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)

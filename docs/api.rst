@@ -12,3 +12,5 @@ This package provides a high-level interface to...
    :maxdepth: 2
 
    api/py509
+   api/client
+   api/asn1

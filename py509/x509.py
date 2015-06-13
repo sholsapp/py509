@@ -10,19 +10,41 @@ from py509.asn1.authority_info_access import AuthorityInfoAccess
 
 
 def make_serial():
-  """Make a random serial number."""
+  """Make a random serial number.
+
+  :return: A serial number as an integer.
+  :rtype: int
+
+  """
   return uuid.uuid4().int
 
 
 def make_pkey(key_type=crypto.TYPE_RSA, key_bits=4096):
-  """Make a public/private key pair."""
+  """Make a public/private key pair.
+
+  :param int key_type: The key type. For example,
+    :class:`OpenSSL.crypto.TYPE_RSA`.
+  :param int key_bits: The size of the key in bits.
+  :return: A private key.
+  :rtype: :class:`OpenSSL.crypto.PKey`
+
+  """
   key = crypto.PKey()
   key.generate_key(key_type, key_bits)
   return key
 
 
 def make_certificate_signing_request(pkey, digest='sha512', **name):
-  """Make a certificate signing request."""
+  """Make a certificate signing request.
+
+  :param OpenSSL.crypto.PKey pkey: A private key.
+  :param str digest: A valid digest to use. For example, `sha512`.
+  :param name: Key word arguments containing subject name parts: C, ST, L, O,
+    OU, CN.
+  :return: A certificate signing request.
+  :rtype: :class:`OpenSSL.crypto.X509Request`
+
+  """
   csr = crypto.X509Req()
   subj = csr.get_subject()
   subj.C = name.get('C', 'US')
@@ -45,6 +67,18 @@ def make_certificate(csr, ca_key, ca_cert, serial, not_before, not_after, digest
 
     - subjectKeyIdentifier
     - authorityKeyIdentifier
+
+  :param OpenSSL.crypto.X509Request csr: A certificate signing request.
+  :param OpenSSL.crypto.PKey ca_key: The signing authority's key.
+  :param OpenSSL.crypto.X509 ca_cert: The signing authority's certificate.
+  :param int serial: A serial number.
+  :param int not_before: A number of seconds from now to wait before the certificate is valid.
+  :param int not_after: A number of seconds from now to wait before expiring the certificate.
+  :param str digest: A valid digest.
+  :param int version: The version of SSL to use with this certificate.
+  :param list[OpenSSL.crypto.X509Extension] exts: A list of extensions to add to this certificate.
+  :return: A X.509 certificate.
+  :rtype: :class:`OpenSSL.crypto.X509`
 
   """
   crt = crypto.X509()
@@ -78,6 +112,11 @@ def make_certificate_authority(**name):
   validate certificates signed by your certificate authorithy, they must trust
   the certificate returned by this function.
 
+  :param name: Key word arguments containing subject name parts: C, ST, L, O,
+    OU, CN.
+  :return: A root self-signed certificate to act as an authority.
+  :rtype: :class:`OpenSSL.crypto.X509`
+
   """
   key = make_pkey()
   csr = make_certificate_signing_request(key, **name)
@@ -88,8 +127,10 @@ def make_certificate_authority(**name):
 def load_x509_certificates(buf):
   """Load one or multiple X.509 certificates from a buffer.
 
-  :param buf: A buffer is an instance of `basestring` and can contain multiple
+  :param str buf: A buffer is an instance of `basestring` and can contain multiple
     certificates.
+  :return: An iterator that iterates over certificates in a buffer.
+  :rtype: list[:class:`OpenSSL.crypto.X509`]
 
   """
   if not isinstance(buf, basestring):
@@ -107,7 +148,9 @@ def decode_subject_alt_name(asn1_data):
 
   See https://tools.ietf.org/html/rfc3280 for more information.
 
-  :param asn1_data: The ASN.1 data to decode.
+  :param bytes asn1_data: The ASN.1 data to decode.
+  :return: A list of alternative names.
+  :rtype: list[str]
 
   """
   for name in decode(asn1_data, asn1Spec=SubjectAltName()):
@@ -132,7 +175,9 @@ def decode_authority_information_access(asn1_data):
 
   See https://tools.ietf.org/html/rfc5280.
 
-  :param asn1_data: The ASN.1 data to decode.
+  :param bytes asn1_data: The ASN.1 data to decode.
+  :return: A URI to access the authority's information.
+  :rtype: str
 
   """
   # OCSP_OID = '1.3.6.1.5.5.7.48.1'

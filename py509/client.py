@@ -9,6 +9,15 @@ log = logging.getLogger(__name__)
 
 
 def get_host_certificate(host, port=443):
+  """Get a host's certificate.
+
+  :param str host: The hostname from which to fetch the certificate.
+  :param int port: The port from which to fetch the certificate, if different
+    than ``443``.
+  :return: The host's X.509 certificate.
+  :rtype: :class:`OpenSSL.crypto.X509`
+
+  """
   ip_addr = socket.gethostbyname(host)
   sock = socket.socket()
   context = SSL.Context(SSL.TLSv1_METHOD)

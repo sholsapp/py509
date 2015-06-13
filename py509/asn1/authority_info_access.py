@@ -11,6 +11,6 @@ class AccessDescription(univ.Sequence):
 
 
 class AuthorityInfoAccess(univ.SequenceOf):
-  """ASN.1 implementation for subjectAltNames support."""
+  """ASN.1 implementation for authorityInfoAccess support."""
   componentType = AccessDescription()
   sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
