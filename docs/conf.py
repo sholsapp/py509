@@ -78,7 +78,7 @@ copyright = u"2001-{0}, {1}".format(datetime.date.today().year, authors)
 # built documents.
 #
 # The short X.Y version.
-version = '0.0'
+version = '0.0.15'
 # The full version, including alpha/beta/rc tags.
 release = version
 
