@@ -194,6 +194,24 @@ def decode_authority_information_access(asn1_data):
 
 
 class X509ExtensionDict(dict):
+  """Treat extensions like a dictionary.
+
+  Classes like :class:`OpenSSL.crypto.X509` and :class:`OpenSSL.crypto.X509Req`
+  make accessing their extensions tedious. Instead of accessing extensions by
+  their short name, these classes require you to access extensions with an
+  offset that you might not know. This results in tedious iterations over the
+  list of extensions, which cause clutter in Python code.
+
+  .. warning::
+
+    This class is *incubating* and will hopefully be removed in future versions
+    of pyOpenSSL. For the time being, use :func:`~load_certificate` to
+    transparently handle this.
+
+  :param OpenSSL.crypto.X509 x509cert: A certificate to pre-load extensions
+    from.
+
+  """
 
   decoders = {
     'subjectAltName': decode_subject_alt_name,
