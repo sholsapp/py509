@@ -195,35 +195,49 @@ def decode_authority_information_access(asn1_data):
 
 class X509ExtensionDict(dict):
 
+  decoders = {
+    'subjectAltName': decode_subject_alt_name,
+    'authorityInfoAccess': decode_authority_information_access,
+  }
+
   def __init__(self, x509cert, *args, **kwargs):
+
     super(X509ExtensionDict, self).__init__(*args, **kwargs)
-    self._extensions = {}
+
     for idx in range(0, x509cert.get_extension_count()):
       ext = x509cert.get_extension(idx)
-      self[ext.get_short_name()] = ext.get_data()
-      self._extensions[ext.get_short_name()] = ext
+      self[ext.get_short_name()] = ext
 
   def __getitem__(self, key):
-    data = super(X509ExtensionDict, self).__getitem__(key)
-    try:
-      x= {
-        'subjectAltName': decode_subject_alt_name,
-        'authorityInfoAccess': decode_authority_information_access,
-      }[key](data)
-      x = list(x)
-    except:
-      x = str(self._extensions[key])
-    return x
+    ext = super(X509ExtensionDict, self).__getitem__(key)
+    if key in self.decoders:
+      return list(self.decoders[key](ext.get_data()))
+    return str(ext)
 
   def __setitem__(self, key, value):
     return super(X509ExtensionDict, self).__setitem__(key, value)
 
   def iteritems(self):
+    # Doing this forces teh __getitem__ function to be called, which is
+    # important for decoding known data types
     for ext in self:
       yield (ext, self[ext])
 
 
 def load_certificate(filetype, buf):
+  """Load a certificate and patch in incubating functionality.
+
+  Load a certificate using the same API as
+  :func:`OpenSSL.crypto.load_certificate` so clients can use this function as a
+  drop in replacement. Doing so patches in *incubating* functionality:
+  functionality that is not yet (or possibly will never be) present in
+  pyOpenSSL.
+
+  :param int filetype: The type of data in ``buf`` -- either
+    :py:data:`OpenSSL.crypto.FILETYPE_PEM` or
+    :py:data:`OpenSSL.crypto.FILETYPE_ASN1`.
+  :param str buf: The buffer containing the certificate.
+  """
   x509cert = crypto.load_certificate(filetype, buf)
   x509cert.extensions = X509ExtensionDict(x509cert)
   return x509cert
