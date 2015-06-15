@@ -25,7 +25,8 @@ def get_certificate(url, strict_compliance=False):
   rsp = http.request('GET', url, headers={'Content-Type': 'application/pkix-cert'})
   if rsp.status == 200:
     if strict_compliance and 'application/x-x509-ca-cert' not in rsp.headers:
-      # This web server isn't following the RFC
+      # This web server's response isn't following the RFC, but might contain
+      # data representing a DER encoded certificate.
       return
   else:
     raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(url))

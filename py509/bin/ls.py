@@ -10,6 +10,8 @@ from OpenSSL import crypto
 import dateutil.parser
 import tabulate
 
+from py509.x509 import load_certificate
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -18,7 +20,7 @@ log = logging.getLogger(__name__)
 def stringify_version(v):
   try:
     return {
-      ssl.PROTOCOL_SSLv2: 'SSLv2',
+      # ssl.PROTOCOL_SSLv2: 'SSLv2',
       ssl.PROTOCOL_SSLv23: 'SSLv23',
       ssl.PROTOCOL_SSLv3: 'SSLv3',
       ssl.PROTOCOL_TLSv1: 'TLSv1',
@@ -33,7 +35,7 @@ def stringify_subject(s):
 
 def main():
 
-  x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
+  x509cert = load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
   table = [
     ['subject', stringify_subject(x509cert.get_subject().get_components())],
@@ -44,10 +46,11 @@ def main():
     ['version', stringify_version(x509cert.get_version())],
   ]
 
-  for idx in range(0, x509cert.get_extension_count()):
-    ext = x509cert.get_extension(idx)
-    if ext.get_short_name() not in ['crlDistributionPoints', 'certificatePolicies', 'authorityInfoAccess']:
-      table.append([ext.get_short_name(), str(ext)[:80]])
+  for ext, data in x509cert.extensions.iteritems():
+    table.append([ext, data])
+
+  #for idx in range(0, x509cert.get_extension_count()):
+  #  ext = x509cert.get_extension(idx)
 
   print tabulate.tabulate(table, headers=['field', 'value'])
 

@@ -143,10 +143,13 @@ def load_x509_certificates(buf):
 def decode_subject_alt_name(asn1_data):
   """Decode a subject alternative name extensions's data.
 
-  Note, not all of the possible types are handled by this method. Currently,
-  only DNS names, IP addresses and URI are handled.
+  .. warning::
 
-  See https://tools.ietf.org/html/rfc3280 for more information.
+    Not all of the possible types are handled by this method. Currently, only
+    DNS names, IP addresses and URI are handled. If these types of names are
+    present in the ``asn1_data`` they will simply be ignored.
+
+  See https://tools.ietf.org/html/rfc5280.
 
   :param bytes asn1_data: The ASN.1 data to decode.
   :return: A list of alternative names.
@@ -187,4 +190,40 @@ def decode_authority_information_access(asn1_data):
       for entry in range(len(authority)):
         component = authority.getComponentByPosition(entry)
         if component.getComponentByName('accessMethod').prettyPrint() == CA_ISSUER_OID:
-          return component.getComponentByName('accessLocation').getComponent().asOctets()
+          yield component.getComponentByName('accessLocation').getComponent().asOctets()
+
+
+class X509ExtensionDict(dict):
+
+  def __init__(self, x509cert, *args, **kwargs):
+    super(X509ExtensionDict, self).__init__(*args, **kwargs)
+    self._extensions = {}
+    for idx in range(0, x509cert.get_extension_count()):
+      ext = x509cert.get_extension(idx)
+      self[ext.get_short_name()] = ext.get_data()
+      self._extensions[ext.get_short_name()] = ext
+
+  def __getitem__(self, key):
+    data = super(X509ExtensionDict, self).__getitem__(key)
+    try:
+      x= {
+        'subjectAltName': decode_subject_alt_name,
+        'authorityInfoAccess': decode_authority_information_access,
+      }[key](data)
+      x = list(x)
+    except:
+      x = str(self._extensions[key])
+    return x
+
+  def __setitem__(self, key, value):
+    return super(X509ExtensionDict, self).__setitem__(key, value)
+
+  def iteritems(self):
+    for ext in self:
+      yield (ext, self[ext])
+
+
+def load_certificate(filetype, buf):
+  x509cert = crypto.load_certificate(filetype, buf)
+  x509cert.extensions = X509ExtensionDict(x509cert)
+  return x509cert
