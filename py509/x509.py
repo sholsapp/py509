@@ -3,10 +3,8 @@ import socket
 import uuid
 
 from pyasn1.codec.der.decoder import decode
+from pyasn1_modules.rfc2459 import SubjectAltName, AuthorityInfoAccessSyntax
 from OpenSSL import crypto
-
-from py509.asn1.san import SubjectAltName
-from py509.asn1.authority_info_access import AuthorityInfoAccess
 
 
 def make_serial():
@@ -185,12 +183,12 @@ def decode_authority_information_access(asn1_data):
   """
   # OCSP_OID = '1.3.6.1.5.5.7.48.1'
   CA_ISSUER_OID = '1.3.6.1.5.5.7.48.2'
-  for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccess()):
-    if isinstance(authority, AuthorityInfoAccess):
+  for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccessSyntax()):
+    if isinstance(authority, AuthorityInfoAccessSyntax):
       for entry in range(len(authority)):
         component = authority.getComponentByPosition(entry)
-        if component.getComponentByName('accessMethod').prettyPrint() == CA_ISSUER_OID:
-          yield component.getComponentByName('accessLocation').getComponent().asOctets()
+        if str(component.getComponentByName('accessMethod').prettyPrint()) == CA_ISSUER_OID:
+          return component.getComponentByName('accessLocation').getComponent().asOctets()
 
 
 class X509ExtensionDict(dict):

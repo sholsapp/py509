@@ -46,7 +46,7 @@ class Pex(Command):
 
 setup(
   name='py509',
-  version='0.0.5',
+  version='0.0.6',
   description="Framework and utility code for running public key infrastructure.",
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
@@ -58,8 +58,10 @@ setup(
     'cryptography',
     'pyOpenSSL',
     'pyasn1',
+    'pyasn1-modules',
     'python-dateutil',
     'tabulate',
+    'urllib3',
   ],
   tests_require=[
     'pytest',
