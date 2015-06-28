@@ -13,4 +13,3 @@ This package provides a high-level interface to...
 
    api/py509
    api/client
-   api/asn1
