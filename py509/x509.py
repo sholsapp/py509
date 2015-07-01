@@ -2,9 +2,9 @@ import re
 import socket
 import uuid
 
-from pyasn1.codec.der.decoder import decode
-from pyasn1_modules.rfc2459 import SubjectAltName, AuthorityInfoAccessSyntax
 from OpenSSL import crypto
+
+from py509.extensions import SubjectAltName, AuthorityInformationAccess
 
 
 def make_serial():
@@ -138,59 +138,6 @@ def load_x509_certificates(buf):
     yield crypto.load_certificate(crypto.FILETYPE_PEM, pem[0])
 
 
-def decode_subject_alt_name(asn1_data):
-  """Decode a subject alternative name extensions's data.
-
-  .. warning::
-
-    Not all of the possible types are handled by this method. Currently, only
-    DNS names, IP addresses and URI are handled. If these types of names are
-    present in the ``asn1_data`` they will simply be ignored.
-
-  See https://tools.ietf.org/html/rfc5280.
-
-  :param bytes asn1_data: The ASN.1 data to decode.
-  :return: A list of alternative names.
-  :rtype: list[str]
-
-  """
-  for name in decode(asn1_data, asn1Spec=SubjectAltName()):
-    if isinstance(name, SubjectAltName):
-      for entry in range(len(name)):
-        component = name.getComponentByPosition(entry)
-        component_name = component.getName()
-        component_data = component.getComponent().asOctets()
-        if component_name == 'dNSName':
-          yield bytes.decode(component_data)
-        elif component_name == 'iPAddress':
-          yield socket.inet_ntoa(component_data)
-        elif component_name == 'uniformResourceIdentifier':
-          yield bytes.decode(component_data)
-        else:
-          # FIXME: other types are currently not handled.
-          pass
-
-
-def decode_authority_information_access(asn1_data):
-  """Decode an authority information access extension's data.
-
-  See https://tools.ietf.org/html/rfc5280.
-
-  :param bytes asn1_data: The ASN.1 data to decode.
-  :return: A URI to access the authority's information.
-  :rtype: str
-
-  """
-  # OCSP_OID = '1.3.6.1.5.5.7.48.1'
-  CA_ISSUER_OID = '1.3.6.1.5.5.7.48.2'
-  for authority in decode(asn1_data, asn1Spec=AuthorityInfoAccessSyntax()):
-    if isinstance(authority, AuthorityInfoAccessSyntax):
-      for entry in range(len(authority)):
-        component = authority.getComponentByPosition(entry)
-        if str(component.getComponentByName('accessMethod').prettyPrint()) == CA_ISSUER_OID:
-          return component.getComponentByName('accessLocation').getComponent().asOctets()
-
-
 class X509ExtensionDict(dict):
   """Treat extensions like a dictionary.
 
@@ -212,8 +159,8 @@ class X509ExtensionDict(dict):
   """
 
   decoders = {
-    'subjectAltName': decode_subject_alt_name,
-    'authorityInfoAccess': decode_authority_information_access,
+    'subjectAltName': SubjectAltName,
+    'authorityInfoAccess': AuthorityInformationAccess
   }
 
   def __init__(self, x509cert, *args, **kwargs):
@@ -227,14 +174,14 @@ class X509ExtensionDict(dict):
   def __getitem__(self, key):
     ext = super(X509ExtensionDict, self).__getitem__(key)
     if key in self.decoders:
-      return list(self.decoders[key](ext.get_data()))
+      return self.decoders[key](ext.get_data())
     return str(ext)
 
   def __setitem__(self, key, value):
     return super(X509ExtensionDict, self).__setitem__(key, value)
 
   def iteritems(self):
-    # Doing this forces teh __getitem__ function to be called, which is
+    # Doing this forces the __getitem__ function to be called, which is
     # important for decoding known data types
     for ext in self:
       yield (ext, self[ext])

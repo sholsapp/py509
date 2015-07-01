@@ -10,7 +10,8 @@ from OpenSSL import crypto
 import certifi
 import urllib3
 
-from py509.x509 import load_x509_certificates, decode_authority_information_access
+from py509.x509 import load_x509_certificates
+from py509.extensions import AuthorityInformationAccess
 
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -55,8 +56,8 @@ def main():
     for idx in range(0, x509cert.get_extension_count()):
       ext = x509cert.get_extension(idx)
       if ext.get_short_name() in ['authorityInfoAccess']:
-        access = decode_authority_information_access(ext.get_data())
-        intermediate = get_certificate(access, strict_compliance=args.strict_compliance)
+        access = AuthorityInformationAccess(ext.get_data())
+        intermediate = get_certificate(access.ca_issuer, strict_compliance=args.strict_compliance)
         if intermediate:
           x509store.add_cert(intermediate)
 
