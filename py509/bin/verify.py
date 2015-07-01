@@ -10,8 +10,9 @@ from OpenSSL import crypto
 import certifi
 import urllib3
 
-from py509.x509 import load_x509_certificates
 from py509.extensions import AuthorityInformationAccess
+from py509.utils import tree, assemble_chain
+from py509.x509 import load_x509_certificates
 
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -63,7 +64,17 @@ def main():
 
   try:
     crypto.X509StoreContext(x509store, x509cert).verify_certificate()
+
+    chain = assemble_chain(x509cert, trust_store + [intermediate])
+    d = {chain[0].get_subject().CN: {}}
+    tmp = d
+    for c in chain:
+      tmp[c.get_subject().CN] = {}
+      tmp = tmp[c.get_subject().CN]
+
     print 'Good'
+    print '\n'.join(tree(d))
+
   except crypto.X509StoreContextError as e:
     print 'Failed on {0}'.format(e.certificate.get_subject())
     print 'Issuer {0}'.format(e.certificate.get_issuer())
