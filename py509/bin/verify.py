@@ -3,6 +3,7 @@
 """Verify a certificate."""
 
 import argparse
+import click
 import logging
 import sys
 
@@ -22,29 +23,31 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
-def get_certificate(url, strict_compliance=False):
+def get_certificate(url):
   http = urllib3.PoolManager()
   rsp = http.request('GET', url, headers={'Content-Type': 'application/pkix-cert'})
   if rsp.status == 200:
-    if strict_compliance and 'application/x-x509-ca-cert' not in rsp.headers:
-      # This web server's response isn't following the RFC, but might contain
-      # data representing a DER encoded certificate.
-      return
+    # if strict_compliance and 'application/x-x509-ca-cert' not in rsp.headers:
+    #   # This web server's response isn't following the RFC, but might contain
+    #   # data representing a DER encoded certificate.
+    #   return
+    return crypto.load_certificate(crypto.FILETYPE_ASN1, rsp.data)
   else:
     raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(url))
-  return crypto.load_certificate(crypto.FILETYPE_ASN1, rsp.data)
 
 
-def main():
+CERTIFI = certifi.where()
 
-  parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--ca', required=False, default=certifi.where())
-  parser.add_argument('--no-resolve-intermediate', action='store_true', default=False)
-  parser.add_argument('--strict-compliance', action='store_true', default=False)
-  args = parser.parse_args()
+
+@click.command()
+@click.option('--ca', default=CERTIFI,
+              help='A custom trust store to use if different than certifi\'s.')
+@click.option('--resolve/--no-resolve', default=True,
+              help='Should intermediate certificates be resolved and added to the trust store?')
+def main(ca, resolve):
 
   trust_store = []
-  with open(args.ca) as fh:
+  with open(ca) as fh:
     trust_store = list(load_x509_certificates(fh.read()))
 
   x509store = crypto.X509Store()
@@ -53,12 +56,12 @@ def main():
 
   x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
-  if not args.no_resolve_intermediate:
+  if resolve:
     for idx in range(0, x509cert.get_extension_count()):
       ext = x509cert.get_extension(idx)
       if ext.get_short_name() in ['authorityInfoAccess']:
         access = AuthorityInformationAccess(ext.get_data())
-        intermediate = get_certificate(access.ca_issuer, strict_compliance=args.strict_compliance)
+        intermediate = get_certificate(access.ca_issuer)
         if intermediate:
           x509store.add_cert(intermediate)
 
@@ -72,8 +75,11 @@ def main():
       tmp[c.get_subject().CN] = {}
       tmp = tmp[c.get_subject().CN]
 
-    print 'Good'
-    print '\n'.join(tree(d))
+    click.secho('[good] ', nl=False, fg='green')
+    click.secho(' * the chain is valid', fg='green')
+    for line in tree(d):
+      click.secho('[good] ', nl=False, fg='green')
+      click.secho(line)
 
   except crypto.X509StoreContextError as e:
     print 'Failed on {0}'.format(e.certificate.get_subject())

@@ -56,6 +56,7 @@ setup(
     # For compatibility with py2.6
     'argparse',
     'certifi>=2015.4.28',
+    'click>=4.0',
     'cryptography>=0.9.1',
     'pyOpenSSL>=0.15.1',
     'pyasn1>=0.1.8',
