@@ -29,6 +29,10 @@ def tree(node, _depth=1):
 def assemble_chain(leaf, store):
   """Assemble the trust chain.
 
+  This assembly method uses the certificates subject and issuer common name and
+  should be used for informational purposes only. It does *not*
+  cryptographically verify the chain!
+
   :param OpenSSL.crypto.X509 leaf: The leaf certificate from which to build the
     chain.
   :param list[OpenSSL.crypto.X509] store: A list of certificates to use to
