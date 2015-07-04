@@ -13,7 +13,7 @@ import urllib3
 
 from py509.extensions import AuthorityInformationAccess
 from py509.utils import tree, assemble_chain
-from py509.x509 import load_x509_certificates
+from py509.x509 import load_x509_certificates, load_certificate
 
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -32,11 +32,11 @@ def get_certificate(url):
     #   # data representing a DER encoded certificate.
     #   return
     try:
-      return crypto.load_certificate(crypto.FILETYPE_ASN1, rsp.data)
+      return load_certificate(crypto.FILETYPE_ASN1, rsp.data)
     except crypto.Error as e:
       log.error('Failed to load DER encoded certificate from %s', url)
     try:
-      return crypto.load_certificate(crypto.FILETYPE_PEM, rsp.data)
+      return load_certificate(crypto.FILETYPE_PEM, rsp.data)
     except crypto.Error as e:
       log.error('Failed to load PEM encoded certificate from %s', url)
     raise RuntimeError('Failed to load any certificate from %s', url)
@@ -72,7 +72,7 @@ def main(ca, resolve):
   for ca in trust_store:
     x509store.add_cert(ca)
 
-  x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
+  x509cert = load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
   intermediate = None
   if resolve:

@@ -122,22 +122,6 @@ def make_certificate_authority(**name):
   return key, crt
 
 
-def load_x509_certificates(buf):
-  """Load one or multiple X.509 certificates from a buffer.
-
-  :param str buf: A buffer is an instance of `basestring` and can contain multiple
-    certificates.
-  :return: An iterator that iterates over certificates in a buffer.
-  :rtype: list[:class:`OpenSSL.crypto.X509`]
-
-  """
-  if not isinstance(buf, basestring):
-    raise ValueError('`buf` should be an instance of `basestring` not `%s`' % type(buf))
-
-  for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
-    yield crypto.load_certificate(crypto.FILETYPE_PEM, pem[0])
-
-
 class X509ExtensionDict(dict):
   """Treat extensions like a dictionary.
 
@@ -204,3 +188,35 @@ def load_certificate(filetype, buf):
   x509cert = crypto.load_certificate(filetype, buf)
   x509cert.extensions = X509ExtensionDict(x509cert)
   return x509cert
+
+
+def load_x509_certificates(buf):
+  """Load one or multiple X.509 certificates from a buffer.
+
+  :param str buf: A buffer is an instance of `basestring` and can contain multiple
+    certificates.
+  :return: An iterator that iterates over certificates in a buffer.
+  :rtype: list[:class:`OpenSSL.crypto.X509`]
+
+  """
+  if not isinstance(buf, basestring):
+    raise ValueError('`buf` should be an instance of `basestring` not `%s`' % type(buf))
+
+  for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
+    yield load_certificate(crypto.FILETYPE_PEM, pem[0])
+
+
+def load_x509_certificates(buf):
+  """Load one or multiple X.509 certificates from a buffer.
+
+  :param str buf: A buffer is an instance of `basestring` and can contain multiple
+    certificates.
+  :return: An iterator that iterates over certificates in a buffer.
+  :rtype: list[:class:`OpenSSL.crypto.X509`]
+
+  """
+  if not isinstance(buf, basestring):
+    raise ValueError('`buf` should be an instance of `basestring` not `%s`' % type(buf))
+
+  for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
+    yield load_certificate(crypto.FILETYPE_PEM, pem[0])
