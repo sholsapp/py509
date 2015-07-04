@@ -1,4 +1,9 @@
-def tree(node, _depth=1):
+"""Utilties and helpers that don't have a home."""
+
+from OpenSSL import crypto
+
+
+def tree(node, prefix=None, postfix=None, _depth=1):
   """Print a tree.
 
   Sometimes it's useful to print datastructures as a tree. This function prints
@@ -15,12 +20,14 @@ def tree(node, _depth=1):
   elbow_joint = '\xe2\x94\x94\xe2\x94\x80\xe2\x94\x80'
   for key, value in node.iteritems():
     current += 1
+    pre = prefix(key) if prefix else ''
+    post = postfix(key) if postfix else ''
     if current == length:
-       yield ' {space} {key}'.format(space=elbow_joint, key=key)
+       yield ' {space} {prefix} {key} {postfix}'.format(space=elbow_joint, key=key, prefix=pre, postfix=post)
     else:
-       yield ' {space} {key}'.format(space=tee_joint, key=key)
+       yield ' {space} {prefix} {key} {postfix}'.format(space=tee_joint, key=key, prefix=pre, postfix=post)
     if value:
-      for e in tree(value, _depth=_depth + 1):
+      for e in tree(value, prefix=prefix, postfix=postfix, _depth=_depth + 1):
         yield (' |  ' if current != length else '    ') + e
 
 
@@ -41,12 +48,21 @@ def assemble_chain(leaf, store):
   :rtype: list[OpenSSL.crypto.X509]
 
   """
+  store_dict = {}
+  for cert in store:
+    store_dict[cert.get_subject().CN] = cert
+
   chain = [leaf]
+
   current = leaf
-  while current.get_issuer().CN != current.get_subject().CN:
-    for cert in store:
-      if cert.get_subject().CN == current.get_issuer().CN:
-        chain.append(cert)
-        current = cert
+  try:
+    while current.get_issuer().CN != current.get_subject().CN:
+      chain.append(store_dict[current.get_issuer().CN])
+      current = store_dict[current.get_issuer().CN]
+  except KeyError:
+    invalid = crypto.X509()
+    invalid.set_subject(current.get_issuer())
+    chain.append(invalid)
+
   chain.reverse()
   return chain
