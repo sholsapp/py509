@@ -2,7 +2,7 @@
 
 """Verify a certificate."""
 
-import argparse
+from functools import partial
 import click
 import logging
 import sys
@@ -31,9 +31,27 @@ def get_certificate(url):
     #   # This web server's response isn't following the RFC, but might contain
     #   # data representing a DER encoded certificate.
     #   return
-    return crypto.load_certificate(crypto.FILETYPE_ASN1, rsp.data)
+    try:
+      return crypto.load_certificate(crypto.FILETYPE_ASN1, rsp.data)
+    except crypto.Error as e:
+      log.error('Failed to load DER encoded certificate from %s', url)
+    try:
+      return crypto.load_certificate(crypto.FILETYPE_PEM, rsp.data)
+    except crypto.Error as e:
+      log.error('Failed to load PEM encoded certificate from %s', url)
+    raise RuntimeError('Failed to load any certificate from %s', url)
   else:
     raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(url))
+
+
+def transmogrify(l):
+  """Fit a flat list into a treeable object."""
+  d = {l[0].get_subject().CN: {}}
+  tmp = d
+  for c in l:
+    tmp[c.get_subject().CN] = {}
+    tmp = tmp[c.get_subject().CN]
+  return d
 
 
 CERTIFI = certifi.where()
@@ -56,6 +74,7 @@ def main(ca, resolve):
 
   x509cert = crypto.load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
+  intermediate = None
   if resolve:
     for idx in range(0, x509cert.get_extension_count()):
       ext = x509cert.get_extension(idx)
@@ -64,24 +83,33 @@ def main(ca, resolve):
         intermediate = get_certificate(access.ca_issuer)
         if intermediate:
           x509store.add_cert(intermediate)
+          trust_store.append(intermediate)
+
+  def style_cert(valid, key):
+    color = 'green' if valid else 'red'
+    return click.style('[+]', fg=color)
+
+  def style_intermediate(key):
+    if intermediate and key == intermediate.get_subject().CN:
+      return click.style('(resolved)', fg='yellow')
+    return ''
 
   try:
     crypto.X509StoreContext(x509store, x509cert).verify_certificate()
 
-    chain = assemble_chain(x509cert, trust_store + [intermediate])
-    d = {chain[0].get_subject().CN: {}}
-    tmp = d
-    for c in chain:
-      tmp[c.get_subject().CN] = {}
-      tmp = tmp[c.get_subject().CN]
-
-    click.secho('[good] ', nl=False, fg='green')
-    click.secho(' * the chain is valid', fg='green')
-    for line in tree(d):
-      click.secho('[good] ', nl=False, fg='green')
+    chain = assemble_chain(x509cert, trust_store)
+    # Success
+    g = partial(style_cert, True)
+    click.secho('[{0}] '.format(len(chain)), nl=False, fg='green')
+    click.secho('certificates verified')
+    for line in tree(transmogrify(chain), prefix=g, postfix=style_intermediate):
       click.secho(line)
 
   except crypto.X509StoreContextError as e:
-    print 'Failed on {0}'.format(e.certificate.get_subject())
-    print 'Issuer {0}'.format(e.certificate.get_issuer())
-    print 'Message: {0}'.format(e)
+    chain = assemble_chain(x509cert, trust_store)
+    # Failure
+    g = partial(style_cert, False)
+    click.secho('[{0}] '.format(len(chain)), nl=False, fg='red')
+    click.secho(e.message[2])
+    for line in tree(transmogrify(chain), prefix=g, postfix=style_intermediate):
+      click.secho(line)
