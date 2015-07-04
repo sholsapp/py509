@@ -171,6 +171,15 @@ class X509ExtensionDict(dict):
       yield (ext, self[ext])
 
 
+def patch_certificate(cert):
+  """Add incubating functionality to a certificate.
+
+  :param OpenSSL.crypto.X509 cert: The certificate to enhance.
+
+  """
+  cert.extensions = X509ExtensionDict(cert)
+
+
 def load_certificate(filetype, buf):
   """Load a certificate and patch in incubating functionality.
 
@@ -186,24 +195,8 @@ def load_certificate(filetype, buf):
   :param str buf: The buffer containing the certificate.
   """
   x509cert = crypto.load_certificate(filetype, buf)
-  x509cert.extensions = X509ExtensionDict(x509cert)
+  patch_certificate(x509cert)
   return x509cert
-
-
-def load_x509_certificates(buf):
-  """Load one or multiple X.509 certificates from a buffer.
-
-  :param str buf: A buffer is an instance of `basestring` and can contain multiple
-    certificates.
-  :return: An iterator that iterates over certificates in a buffer.
-  :rtype: list[:class:`OpenSSL.crypto.X509`]
-
-  """
-  if not isinstance(buf, basestring):
-    raise ValueError('`buf` should be an instance of `basestring` not `%s`' % type(buf))
-
-  for pem in re.findall('(-----BEGIN CERTIFICATE-----\s(\S+\n*)+\s-----END CERTIFICATE-----\s)', buf):
-    yield load_certificate(crypto.FILETYPE_PEM, pem[0])
 
 
 def load_x509_certificates(buf):

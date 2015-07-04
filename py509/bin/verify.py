@@ -46,11 +46,21 @@ def get_certificate(url):
 
 def transmogrify(l):
   """Fit a flat list into a treeable object."""
-  d = {l[0].get_subject().CN: {}}
+
+  def cert_string(cert):
+    uid = 'unknown'
+    if 'subjectKeyIdentifier' in cert.extensions:
+      uid = cert.extensions['subjectKeyIdentifier']
+      uid = uid.replace(':', '')
+      uid = uid.lower()
+      uid = uid[:8]
+    return '({1}) {0}'.format(cert.get_subject().CN, uid)
+
+  d = {cert_string(l[0]): {}}
   tmp = d
   for c in l:
-    tmp[c.get_subject().CN] = {}
-    tmp = tmp[c.get_subject().CN]
+    tmp[cert_string(c)] = {}
+    tmp = tmp[cert_string(c)]
   return d
 
 
@@ -90,7 +100,7 @@ def main(ca, resolve):
     return click.style('[+]', fg=color)
 
   def style_intermediate(key):
-    if intermediate and key == intermediate.get_subject().CN:
+    if intermediate and intermediate.get_subject().CN in key:
       return click.style('(resolved)', fg='yellow')
     return ''
 

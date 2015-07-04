@@ -2,6 +2,8 @@
 
 from OpenSSL import crypto
 
+from py509.x509 import patch_certificate
+
 
 def tree(node, prefix=None, postfix=None, _depth=1):
   """Print a tree.
@@ -61,6 +63,7 @@ def assemble_chain(leaf, store):
       current = store_dict[current.get_issuer().CN]
   except KeyError:
     invalid = crypto.X509()
+    patch_certificate(invalid)
     invalid.set_subject(current.get_issuer())
     chain.append(invalid)
 
