@@ -47,20 +47,11 @@ def get_certificate(url):
 def transmogrify(l):
   """Fit a flat list into a treeable object."""
 
-  def cert_string(cert):
-    uid = 'unknown'
-    if 'subjectKeyIdentifier' in cert.extensions:
-      uid = cert.extensions['subjectKeyIdentifier']
-      uid = uid.replace(':', '')
-      uid = uid.lower()
-      uid = uid[:8]
-    return '({1}) {0}'.format(cert.get_subject().CN, uid)
-
-  d = {cert_string(l[0]): {}}
+  d = {l[0]: {}}
   tmp = d
   for c in l:
-    tmp[cert_string(c)] = {}
-    tmp = tmp[cert_string(c)]
+    tmp[c] = {}
+    tmp = tmp[c]
   return d
 
 
@@ -86,21 +77,34 @@ def main(ca, resolve):
 
   intermediate = None
   if resolve:
-    for idx in range(0, x509cert.get_extension_count()):
-      ext = x509cert.get_extension(idx)
-      if ext.get_short_name() in ['authorityInfoAccess']:
-        access = AuthorityInformationAccess(ext.get_data())
-        intermediate = get_certificate(access.ca_issuer)
-        if intermediate:
-          x509store.add_cert(intermediate)
-          trust_store.append(intermediate)
+    if 'authorityInfoAccess' in  x509cert.extensions:
+      intermediate = get_certificate(x509cert.extensions['authorityInfoAccess'].ca_issuer)
+      if intermediate:
+        x509store.add_cert(intermediate)
+        trust_store.append(intermediate)
+
+  def cert_string(cert):
+    return '{0}'.format(cert.get_subject().CN)
+
 
   def style_cert(valid, key):
     color = 'green' if valid else 'red'
-    return click.style('[+]', fg=color)
+    string = []
+    string.append(click.style('[+] ', fg=color))
+    uid = 'unknown'
+    if 'subjectKeyIdentifier' in key.extensions:
+      uid = key.extensions['subjectKeyIdentifier']
+      uid = uid.replace(':', '')
+      uid = uid.lower()
+      uid = uid[:8]
+    if uid == 'unknown':
+      string.append(click.style('({0})'.format(uid), fg='yellow'))
+    else:
+      string.append('({0})'.format(uid))
+    return ''.join(string)
 
   def style_intermediate(key):
-    if intermediate and intermediate.get_subject().CN in key:
+    if intermediate and intermediate.get_subject().CN == key.get_subject().CN:
       return click.style('(resolved)', fg='yellow')
     return ''
 
@@ -112,7 +116,7 @@ def main(ca, resolve):
     g = partial(style_cert, True)
     click.secho('[{0}] '.format(len(chain)), nl=False, fg='green')
     click.secho('certificates verified')
-    for line in tree(transmogrify(chain), prefix=g, postfix=style_intermediate):
+    for line in tree(transmogrify(chain), formatter=cert_string, prefix=g, postfix=style_intermediate):
       click.secho(line)
 
   except crypto.X509StoreContextError as e:

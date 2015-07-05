@@ -5,7 +5,7 @@ from OpenSSL import crypto
 from py509.x509 import patch_certificate
 
 
-def tree(node, prefix=None, postfix=None, _depth=1):
+def tree(node, formatter=None, prefix=None, postfix=None, _depth=1):
   """Print a tree.
 
   Sometimes it's useful to print datastructures as a tree. This function prints
@@ -22,14 +22,13 @@ def tree(node, prefix=None, postfix=None, _depth=1):
   elbow_joint = '\xe2\x94\x94\xe2\x94\x80\xe2\x94\x80'
   for key, value in node.iteritems():
     current += 1
+    k = formatter(key) if formatter else key
     pre = prefix(key) if prefix else ''
     post = postfix(key) if postfix else ''
-    if current == length:
-       yield ' {space} {prefix} {key} {postfix}'.format(space=elbow_joint, key=key, prefix=pre, postfix=post)
-    else:
-       yield ' {space} {prefix} {key} {postfix}'.format(space=tee_joint, key=key, prefix=pre, postfix=post)
+    space = elbow_joint if current == length else tee_joint
+    yield ' {space} {prefix} {key} {postfix}'.format(space=elbow_joint, key=k, prefix=pre, postfix=post)
     if value:
-      for e in tree(value, prefix=prefix, postfix=postfix, _depth=_depth + 1):
+      for e in tree(value, formatter=formatter, prefix=prefix, postfix=postfix, _depth=_depth + 1):
         yield (' |  ' if current != length else '    ') + e
 
 
