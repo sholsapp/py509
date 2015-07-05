@@ -37,6 +37,9 @@ def main():
 
   x509cert = load_certificate(crypto.FILETYPE_PEM, sys.stdin.read())
 
+  print x509cert.extensions['subjectKeyIdentifier']
+  print x509cert.extensions['authorityKeyIdentifier']
+
   table = [
     ['subject', stringify_subject(x509cert.get_subject().get_components())],
     ['issuer', stringify_subject(x509cert.get_issuer().get_components())],
@@ -48,9 +51,6 @@ def main():
 
   for ext, data in x509cert.extensions.iteritems():
     table.append([ext, data])
-
-  #for idx in range(0, x509cert.get_extension_count()):
-  #  ext = x509cert.get_extension(idx)
 
   print tabulate.tabulate(table, headers=['field', 'value'])
 

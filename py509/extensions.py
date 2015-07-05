@@ -1,7 +1,11 @@
+import binascii
+
 from pyasn1.codec.der.decoder import decode
 from pyasn1_modules.rfc2459 import (
     AuthorityInfoAccessSyntax as _AuthorityInfoAccessSyntax,
+    AuthorityKeyIdentifier as _AuthorityKeyIdentifier,
     SubjectAltName as _SubjectAltName,
+    SubjectKeyIdentifier as _SubjectKeyIdentifier,
 )
 
 
@@ -81,3 +85,29 @@ class AuthorityInformationAccess(object):
 
   def __repr__(self):
     return 'AuthorityInformationAccess(oscp="{0}", ca_issuer="{1}")'.format(self.ocsp, self.ca_issuer)
+
+
+class SubjectKeyIdentifier(object):
+
+  id = None
+
+  def __init__(self, asn1_data):
+    for authority in decode(asn1_data, asn1Spec=_SubjectKeyIdentifier()):
+      if isinstance(authority, _SubjectKeyIdentifier):
+        self.id = binascii.hexlify(authority.asOctets())
+
+
+class AuthorityKeyIdentifier(object):
+
+  id = None
+
+  issuer = None
+
+  serial = None
+
+  def __init__(self, asn1_data):
+    for authority in decode(asn1_data, asn1Spec=_AuthorityKeyIdentifier()):
+      if isinstance(authority, _AuthorityKeyIdentifier):
+        self.id = binascii.hexlify(authority.getComponentByName('keyIdentifier').asOctets())
+        self.issuer = authority.getComponentByName('authorityCertIssuer')
+        self.serial = authority.getComponentByName('authorityCertSerialNumber')

@@ -5,7 +5,7 @@ import uuid
 from OpenSSL import crypto
 import urllib3
 
-from py509.extensions import SubjectAltName, AuthorityInformationAccess
+from py509.extensions import SubjectAltName, AuthorityInformationAccess, SubjectKeyIdentifier, AuthorityKeyIdentifier
 
 
 def resolve_pkix_certificate(url):
@@ -176,8 +176,10 @@ class X509ExtensionDict(dict):
   """
 
   decoders = {
+    'authorityInfoAccess': AuthorityInformationAccess,
+    'authorityKeyIdentifier': AuthorityKeyIdentifier,
     'subjectAltName': SubjectAltName,
-    'authorityInfoAccess': AuthorityInformationAccess
+    'subjectKeyIdentifier': SubjectKeyIdentifier,
   }
 
   def __init__(self, x509cert, *args, **kwargs):
