@@ -9,11 +9,10 @@ import sys
 
 from OpenSSL import crypto
 import certifi
-import urllib3
 
 from py509.extensions import AuthorityInformationAccess
-from py509.utils import tree, assemble_chain
-from py509.x509 import load_x509_certificates, load_certificate
+from py509.utils import tree, transmogrify, assemble_chain
+from py509.x509 import resolve_pkix_certificate, load_x509_certificates, load_certificate
 
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -21,38 +20,6 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
-
-
-def get_certificate(url):
-  http = urllib3.PoolManager()
-  rsp = http.request('GET', url, headers={'Content-Type': 'application/pkix-cert'})
-  if rsp.status == 200:
-    # if strict_compliance and 'application/x-x509-ca-cert' not in rsp.headers:
-    #   # This web server's response isn't following the RFC, but might contain
-    #   # data representing a DER encoded certificate.
-    #   return
-    try:
-      return load_certificate(crypto.FILETYPE_ASN1, rsp.data)
-    except crypto.Error as e:
-      log.error('Failed to load DER encoded certificate from %s', url)
-    try:
-      return load_certificate(crypto.FILETYPE_PEM, rsp.data)
-    except crypto.Error as e:
-      log.error('Failed to load PEM encoded certificate from %s', url)
-    raise RuntimeError('Failed to load any certificate from %s', url)
-  else:
-    raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(url))
-
-
-def transmogrify(l):
-  """Fit a flat list into a treeable object."""
-
-  d = {l[0]: {}}
-  tmp = d
-  for c in l:
-    tmp[c] = {}
-    tmp = tmp[c]
-  return d
 
 
 CERTIFI = certifi.where()
@@ -78,14 +45,13 @@ def main(ca, resolve):
   intermediate = None
   if resolve:
     if 'authorityInfoAccess' in  x509cert.extensions:
-      intermediate = get_certificate(x509cert.extensions['authorityInfoAccess'].ca_issuer)
+      intermediate = resolve_pkix_certificate(x509cert.extensions['authorityInfoAccess'].ca_issuer)
       if intermediate:
         x509store.add_cert(intermediate)
         trust_store.append(intermediate)
 
   def cert_string(cert):
     return '{0}'.format(cert.get_subject().CN)
-
 
   def style_cert(valid, key):
     color = 'green' if valid else 'red'
@@ -125,5 +91,5 @@ def main(ca, resolve):
     g = partial(style_cert, False)
     click.secho('[{0}] '.format(len(chain)), nl=False, fg='red')
     click.secho(e.message[2])
-    for line in tree(transmogrify(chain), prefix=g, postfix=style_intermediate):
+    for line in tree(transmogrify(chain), formatter=cert_string, prefix=g, postfix=style_intermediate):
       click.secho(line)

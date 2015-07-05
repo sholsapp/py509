@@ -3,8 +3,41 @@ import socket
 import uuid
 
 from OpenSSL import crypto
+import urllib3
 
 from py509.extensions import SubjectAltName, AuthorityInformationAccess
+
+
+def resolve_pkix_certificate(url):
+  """Resolve a certificate from a remote host.
+
+  Extensions like the authority information access extension point to
+  certificates hosted on remote servers. This functionc an be used to
+  download and load the certificate.
+
+  :param str url: The URL to resolve a certificate from.
+  :returns: The certificate.
+  :rtype: OpenSSL.crypto.X509
+
+  """
+  http = urllib3.PoolManager()
+  rsp = http.request('GET', url, headers={'Content-Type': 'application/pkix-cert'})
+  if rsp.status == 200:
+    # if strict_compliance and 'application/x-x509-ca-cert' not in rsp.headers:
+    #   # This web server's response isn't following the RFC, but might contain
+    #   # data representing a DER encoded certificate.
+    #   return
+    try:
+      return load_certificate(crypto.FILETYPE_ASN1, rsp.data)
+    except crypto.Error as e:
+      log.error('Failed to load DER encoded certificate from %s', url)
+    try:
+      return load_certificate(crypto.FILETYPE_PEM, rsp.data)
+    except crypto.Error as e:
+      log.error('Failed to load PEM encoded certificate from %s', url)
+    raise RuntimeError('Failed to load any certificate from %s', url)
+  else:
+    raise RuntimeError('Failed to fetch intermediate certificate at {0}!'.format(url))
 
 
 def make_serial():

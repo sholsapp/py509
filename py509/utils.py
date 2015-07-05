@@ -5,6 +5,16 @@ from OpenSSL import crypto
 from py509.x509 import patch_certificate
 
 
+def transmogrify(l):
+  """Fit a flat list into a treeable object."""
+  d = {l[0]: {}}
+  tmp = d
+  for c in l:
+    tmp[c] = {}
+    tmp = tmp[c]
+  return d
+
+
 def tree(node, formatter=None, prefix=None, postfix=None, _depth=1):
   """Print a tree.
 
@@ -14,6 +24,12 @@ def tree(node, formatter=None, prefix=None, postfix=None, _depth=1):
   and :class:`None` for terminals.
 
   :param dict node: The root of the tree to print.
+  :param callable formatter: A callable that takes a single argument, the key,
+    that formats the key in the tree.
+  :param callable prefix: A callable that takes a single argument, the key,
+    that adds any additional text before the formatted key.
+  :param callable postfix: A callable that takes a single argument, the key,
+    that adds any additional text after the formatted key.
 
   """
   current = 0
