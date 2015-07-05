@@ -63,10 +63,7 @@ def main(ca, resolve):
       uid = uid.replace(':', '')
       uid = uid.lower()
       uid = uid[:8]
-    if uid == 'unknown':
-      string.append(click.style('({0})'.format(uid), fg='yellow'))
-    else:
-      string.append('({0})'.format(uid))
+    string.append('({0})'.format(uid))
     return ''.join(string)
 
   def style_intermediate(key):
