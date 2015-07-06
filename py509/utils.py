@@ -42,7 +42,7 @@ def tree(node, formatter=None, prefix=None, postfix=None, _depth=1):
     pre = prefix(key) if prefix else ''
     post = postfix(key) if postfix else ''
     space = elbow_joint if current == length else tee_joint
-    yield ' {space} {prefix} {key} {postfix}'.format(space=elbow_joint, key=k, prefix=pre, postfix=post)
+    yield ' {space} {prefix}{key}{postfix}'.format(space=elbow_joint, key=k, prefix=pre, postfix=post)
     if value:
       for e in tree(value, formatter=formatter, prefix=prefix, postfix=postfix, _depth=_depth + 1):
         yield (' |  ' if current != length else '    ') + e
