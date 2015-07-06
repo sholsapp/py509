@@ -59,7 +59,7 @@ def main(ca, resolve):
     string.append(click.style('[+] ', fg=color))
     uid = 'unknown'
     if 'subjectKeyIdentifier' in key.extensions:
-      uid = key.extensions['subjectKeyIdentifier']
+      uid = key.extensions['subjectKeyIdentifier'].id
       uid = uid.replace(':', '')
       uid = uid.lower()
       uid = uid[:8]
