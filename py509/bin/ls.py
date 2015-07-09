@@ -9,7 +9,6 @@ import sys
 
 from OpenSSL import crypto
 import dateutil.parser
-import tabulate
 
 from py509.utils import tree
 from py509.x509 import load_certificate
@@ -47,7 +46,7 @@ def main():
   if 'authorityKeyIdentifier' in x509cert.extensions:
     issuer_id = x509cert.extensions['authorityKeyIdentifier'].id
 
-  print 'Listing:'
+  print 'Certificate:'
   print '\n'.join(tree({
     'validity': {
       'lifetime': {
@@ -63,7 +62,12 @@ def main():
     },
     'issuer': {
       'name': {
-        str(x509cert.get_issuer()): {},
+        'CN={0}'.format(x509cert.get_issuer().CN): {},
+        '{0}, {1}, {2}'.format(
+          x509cert.get_issuer().L,
+          x509cert.get_issuer().ST,
+          x509cert.get_issuer().C): {},
+        'O={0}'.format(x509cert.get_issuer().O): {},
       },
       'identifiers': {
         'key identifier': {
@@ -73,7 +77,12 @@ def main():
     },
     'subject': {
       'name': {
-        str(x509cert.get_subject()): {},
+        'CN={0}'.format(x509cert.get_subject().CN): {},
+        '{0}, {1}, {2}'.format(
+          x509cert.get_subject().L,
+          x509cert.get_subject().ST,
+          x509cert.get_subject().C): {},
+        'O={0}'.format(x509cert.get_subject().O): {},
       },
       'identifiers': {
         'key identifier': {
@@ -83,17 +92,6 @@ def main():
     }
   }))
 
-  table = [
-    ['subject', stringify_subject(x509cert.get_subject().get_components())],
-    ['issuer', stringify_subject(x509cert.get_issuer().get_components())],
-    ['serial', x509cert.get_serial_number()],
-    ['version', stringify_version(x509cert.get_version())],
-  ]
-
-  for ext, data in x509cert.extensions.iteritems():
-    table.append([ext, data])
-
-  print tabulate.tabulate(table, headers=['field', 'value'])
 
 if __name__ == '__main__':
   main()
