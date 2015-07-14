@@ -46,11 +46,12 @@ class Pex(Command):
 
 setup(
   name='py509',
-  version='0.0.6',
+  version='0.1.0',
   description="Framework and utility code for running public key infrastructure.",
   author='Stephen Holsapple',
   author_email='sholsapp@gmail.com',
   url='https://github.com/sholsapp/py509',
+  license='Apache License, Version 2.0',
   packages=find_packages(),
   install_requires=[
     # For compatibility with py2.6
@@ -72,4 +73,16 @@ setup(
   ],
   entry_points=entry_points,
   cmdclass={'pexify': Pex},
+  classifiers=[
+    'License :: OSI Approved :: Apache Software License',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Programming Language :: Python :: Implementation :: PyPy',
+    'Topic :: Security :: Cryptography',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+  ],
 )
