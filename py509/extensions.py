@@ -1,4 +1,5 @@
 import binascii
+import socket
 
 from pyasn1.codec.der.decoder import decode
 from pyasn1_modules.rfc2459 import (
