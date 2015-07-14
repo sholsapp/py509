@@ -10,7 +10,6 @@ import sys
 from OpenSSL import crypto
 import certifi
 
-from py509.extensions import AuthorityInformationAccess
 from py509.utils import tree, transmogrify, assemble_chain
 from py509.x509 import resolve_pkix_certificate, load_x509_certificates, load_certificate
 
@@ -44,7 +43,7 @@ def main(ca, resolve):
 
   intermediate = None
   if resolve:
-    if 'authorityInfoAccess' in  x509cert.extensions:
+    if 'authorityInfoAccess' in x509cert.extensions:
       intermediate = resolve_pkix_certificate(x509cert.extensions['authorityInfoAccess'].ca_issuer)
       if intermediate:
         x509store.add_cert(intermediate)

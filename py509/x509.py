@@ -1,11 +1,14 @@
+import logging
 import re
-import socket
 import uuid
 
 from OpenSSL import crypto
 import urllib3
 
 from py509.extensions import SubjectAltName, AuthorityInformationAccess, SubjectKeyIdentifier, AuthorityKeyIdentifier
+
+
+log = logging.getLogger(__name__)
 
 
 def resolve_pkix_certificate(url):
@@ -29,11 +32,11 @@ def resolve_pkix_certificate(url):
     #   return
     try:
       return load_certificate(crypto.FILETYPE_ASN1, rsp.data)
-    except crypto.Error as e:
+    except crypto.Error:
       log.error('Failed to load DER encoded certificate from %s', url)
     try:
       return load_certificate(crypto.FILETYPE_PEM, rsp.data)
-    except crypto.Error as e:
+    except crypto.Error:
       log.error('Failed to load PEM encoded certificate from %s', url)
     raise RuntimeError('Failed to load any certificate from %s', url)
   else:
