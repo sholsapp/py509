@@ -66,8 +66,9 @@ setup(
     'urllib3>=1.10.4',
   ],
   tests_require=[
-    'pytest',
     'flake8',
+    'pytest',
+    'pytest-cov',
   ],
   entry_points=entry_points,
   cmdclass={'pexify': Pex},
