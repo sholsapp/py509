@@ -62,12 +62,12 @@ def main(ca, resolve):
       uid = uid.replace(':', '')
       uid = uid.lower()
       uid = uid[:8]
-    string.append('({0})'.format(uid))
+    string.append('({0}) '.format(uid))
     return ''.join(string)
 
   def style_intermediate(key):
     if intermediate and intermediate.get_subject().CN == key.get_subject().CN:
-      return click.style('(resolved)', fg='yellow')
+      return click.style(' (resolved)', fg='yellow')
     return ''
 
   try:
