@@ -1,6 +1,6 @@
 from OpenSSL import crypto
 
-from py509.x509 import make_pkey, make_certificate_signing_request, make_certificate_authority, make_certificate, make_serial, decode_subject_alt_name
+from py509.x509 import make_pkey, make_certificate_signing_request, make_certificate_authority, make_certificate, make_serial
 
 
 # These are known to be weak, but this is fast, and this is just for testing.
@@ -46,15 +46,3 @@ def test_make_certificate():
     exts=[crypto.X509Extension(b'subjectAltName', True, b'IP:0.0.0.0')],
     digest=TEST_DIGEST)
   assert crt.get_subject().CN == 'Test Cert'
-
-
-def test_make_san_extensions():
-  e1 = crypto.X509Extension(b'subjectAltName', True, b'IP:0.0.0.0')
-  assert e1
-  assert list(decode_subject_alt_name(e1.get_data())) == ['0.0.0.0']
-  e2 = crypto.X509Extension(b'subjectAltName', True, b'DNS:foo.com')
-  assert e2
-  assert list(decode_subject_alt_name(e2.get_data())) == ['foo.com']
-  e3 = crypto.X509Extension(b'subjectAltName', True, b'URI:this:is:a:uri(hello-world)')
-  assert e3
-  assert list(decode_subject_alt_name(e3.get_data())) == ['this:is:a:uri(hello-world)']
