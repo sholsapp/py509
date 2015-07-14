@@ -1,7 +1,7 @@
 # py509
 
 [![Latest Version](https://img.shields.io/pypi/v/py509.svg)](https://pypi.python.org/pypi/py509/)
-[![Documentation Status](https://readthedocs.org/projects/py509/badge/?version=latest)](https://readthedocs.org/projects/py509/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/py509/badge/?version=latest)](http://py509.readthedocs.org/en/latest/)
 [![Travis](https://secure.travis-ci.org/sholsapp/py509.png?branch=master)](https://travis-ci.org/sholsapp/py509)
 
 Framework and scripts written with pyOpenSSL and cryptography for running
