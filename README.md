@@ -1,8 +1,9 @@
 # py509
 
-[![Latest Version](https://img.shields.io/pypi/v/py509.svg)](https://pypi.python.org/pypi/py509/)
-[![Documentation Status](https://readthedocs.org/projects/py509/badge/?version=latest)](http://py509.readthedocs.org/en/latest/)
-[![Travis](https://secure.travis-ci.org/sholsapp/py509.png?branch=master)](https://travis-ci.org/sholsapp/py509)
+[![Travis](https://img.shields.io/travis/sholsapp/py509.svg?style=flat-square)](https://travis-ci.org/sholsapp/py509)
+[![PyPI](https://img.shields.io/pypi/v/py509.svg?style=flat-square)](https://pypi.python.org/pypi/py509)
+[![Documentation Status](https://readthedocs.org/projects/py509/badge/?style=flat-square&version=latest)](http://py509.readthedocs.org/en/latest/)
+
 
 Framework and scripts written with pyOpenSSL and cryptography for running
 public key infrastructure.
